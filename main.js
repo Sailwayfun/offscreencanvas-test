@@ -1,24 +1,27 @@
-import './style.css'
-import javascriptLogo from './javascript.svg'
-import viteLogo from '/vite.svg'
-import { setupCounter } from './counter.js'
+import './style.css';
+import GraphWorker from './worker/graphWorker?worker';
 
 document.querySelector('#app').innerHTML = `
   <div>
-    <a href="https://vite.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank">
-      <img src="${javascriptLogo}" class="logo vanilla" alt="JavaScript logo" />
-    </a>
-    <h1>Hello Vite!</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite logo to learn more
-    </p>
+    <canvas id="canvas" width="1366" height="768"></canvas>
   </div>
-`
+`;
 
-setupCounter(document.querySelector('#counter'))
+document.addEventListener('DOMContentLoaded', () => {
+  const worker = new GraphWorker();
+  console.log({ worker });
+
+  const DUMMY_NODES = Array.from({ length: 5000 }, (_, i) => ({ id: i + 1 }));
+  const DUMMY_EDGES = Array.from({ length: 4999 }, (_, i) => ({ source: i + 1, target: i + 2 }));
+
+  const offscreenCanvas = document.querySelector('#canvas').transferControlToOffscreen();
+
+  worker.postMessage({
+    type: 'init',
+    nodes: DUMMY_NODES,
+    edges: DUMMY_EDGES,
+    width: 1366,
+    height: 768,
+    canvas: offscreenCanvas,
+  }, [offscreenCanvas]);
+});
